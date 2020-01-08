@@ -1,4 +1,6 @@
 ebin
+*.d
+.erlang.mk/
 logs
 tags
 *.beam
