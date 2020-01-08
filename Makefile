@@ -11,8 +11,9 @@ export CPPFLAGS=-I/usr/local/opt/openssl/include/ -I/usr/local/include -I/usr/lo
 endif
 
 LOCAL_DEPS = inets mnesia
-DEPS = exml base16 fusco meck bbmustache uuid_erl gun worker_pool
+DEPS = exml base16 fusco meck bbmustache uuid_erl gun worker_pool lager
 dep_exml = git https://github.com/esl/exml.git a307e83
+dep_lager = git https://github.com/erlang-lager/lager.git 3.8.0
 dep_base16 = git https://github.com/goj/base16.git ec420aa
 dep_fusco = git https://github.com/esl/fusco.git 0a428471
 dep_meck = git https://github.com/eproxus/meck 0.8.13

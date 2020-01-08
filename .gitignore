@@ -1,4 +1,5 @@
 ebin
+_rel/
 *.d
 .erlang.mk/
 logs
