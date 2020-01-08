@@ -72,10 +72,10 @@ interpret_config_file_path(RelPath) ->
 -spec log_stanza(undefined | binary(), in | out, exml_stream:element()) -> ok.
 log_stanza(undefined, _, _) -> ok;
 log_stanza(Jid, Direction, Stanza) ->
-    case {is_ct_available(), ct:get_config(stanza_log)} of
-        {true, true} ->
+    case application:get_env(escalus, stanza_log) of
+        console_and_file ->
             do_log_stanza(console_and_file, Jid, Direction, Stanza);
-        {true, LogTarget}
+        LogTarget
           when console_and_file == LogTarget;
                console == LogTarget;
                file == LogTarget ->
@@ -98,9 +98,9 @@ do_log_stanza(Target, Jid, Direction, Stanza) ->
     PrettyStanza = try
                        iolist_to_binary(exml:to_pretty_iolist(Stanza))
                    catch error:Error ->
-                             ct:pal(error, "Cannot convert stanza to iolist: ~s~n~p",
+                             lager:error("Cannot convert stanza to iolist: ~s~n~p",
                                     [ReportString, Stanza]),
-                             ct:fail(Error)
+                             error(Error)
                    end,
     ct_print_or_log(Target, ReportString, PrettyStanza).
 
@@ -111,7 +111,7 @@ ct_print_or_log(Target, ReportString, PrettyStanza) ->
                 file -> log
             end,
     %% grep anchor: ct:pal, ct:print, ct:log
-    ct:CTFun(stanza_log, ?STD_IMPORTANCE, "~s~n~s", [ReportString, PrettyStanza], [esc_chars]).
+    lager:debug("~s~n~s", [ReportString, PrettyStanza]).
 
 %% ------------- Common Test hack! -------------
 %% There is a bug in Common Test since 18.3, which causes links to be printed inside <pre/>.
@@ -152,4 +152,4 @@ ct_log_timestamp({MS, S, US}) ->
                                 [Year, Month, Day, Hour, Min, Sec, MilliSec])).
 
 log_error(Format, Args) ->
-    ct:pal(error, Format, Args).
+    lager:error(Format, Args).
