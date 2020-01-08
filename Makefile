@@ -1,27 +1,30 @@
-.PHONY: all compile test clean
+PROJECT = escalus
+PROJECT_VERSION = $(shell head -n 1 relx.config | awk '{split($$0, a, "\""); print a[2]}')
 
-REBAR = ./rebar3
+UNAME := $(shell uname)
 
-all: compile
+ifeq ($(UNAME), Darwin)
+export CC=cc
+export LDFLAGS=-L/usr/local/opt/openssl/lib -L/usr/local/lib -L/usr/local/opt/expat/lib
+export CFLAGS=-I/usr/local/opt/openssl/include/ -I/usr/local/include -I/usr/local/opt/expat/include
+export CPPFLAGS=-I/usr/local/opt/openssl/include/ -I/usr/local/include -I/usr/local/opt/expat/include
+endif
 
-compile:
-	$(REBAR) compile
+LOCAL_DEPS = inets mnesia
+DEPS = exml base16 fusco meck bbmustache uuid gun worker_pool
+dep_exml = git https://github.com/esl/exml.git a307e83
+dep_base16 = git https://github.com/goj/base16.git ec420aa
+dep_fusco = git https://github.com/esl/fusco.git 0a428471
+dep_meck = git https://github.com/eproxus/meck 0.8.13
+dep_bbmustache = git https://github.com/soranoba/bbmustache.git 1.8.0
+dep_uuid = git https://github.com/okeuday/uuid.git 1.7.5
+dep_gun = git https://github.com/ninenines/gun.git 1.3.1
+dep_worker_pool = git https://github.com/inaka/worker_pool 3.2.0
 
-test:
-	$(REBAR) eunit
+include erlang.mk
 
-clean:
-	$(REBAR) clean
+ERLC_OPTS := $(filter-out -Werror,$(ERLC_OPTS))
 
-ct:
-	$(REBAR) ct
-
-dialyzer:
-	$(REBAR) dialyzer
-
-mongooseim-start:
-	docker run --rm -d -t -h mongooseim-escalus-test-1 --name mongooseim-escalus-test-1 \
-		-p 5222:5222 -p 8888:8888  -v `pwd`/mongooseim-escalus-test-1:/member mongooseim/mongooseim:2.1.0beta2
-
-mongooseim-stop:
-	docker stop mongooseim-escalus-test-1
+ERLC_COMPILE_OPTS= +'{parse_transform, lager_transform}'
+ERLC_OPTS += $(ERLC_COMPILE_OPTS)
+TEST_ERLC_OPTS += $(ERLC_COMPILE_OPTS)
